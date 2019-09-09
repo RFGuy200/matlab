@@ -4,16 +4,22 @@
 
 clear; clc;
 
-data_format_write = 'int64';
-data_format_write_read = '*int64';
-data = int64([1:300000]);
+data_format = 'int32';
+data_format_read = [data_format, '=>', data_format];
+data_length = 300000;
+
+data = zeros( 1, data_length, data_format );
+
+for i=1:1:numel(data)
+	data(i) = randi( 100, data_format );
+end
 
 fprintf('*******************************\n');
 fprintf('* Writing data to binary file *\n');
 fprintf('*******************************\n');
 tic
 fid = fopen( 'text.bin', 'w' );
-fwrite( fid, data, data_format_write );
+fwrite( fid, data, data_format );
 fclose( fid );
 toc
 
@@ -23,7 +29,7 @@ fprintf('* Reading data from binary file *\n');
 fprintf('*********************************\n');
 tic
 fid = fopen( 'text.bin', 'r');
-data_read = fread( fid, [3 Inf], data_format_write_read )';
+data_read = fread( fid, [3 Inf], data_format_read )';
 fclose( fid );
 toc
 
@@ -33,13 +39,24 @@ fprintf('* Writing data to text file *\n');
 fprintf('*****************************\n');
 tic
 fid = fopen( 'text.txt', 'w');
-max = size(data);
-for i=1:1:max(2)
+for i=1:1:data_length
 	fprintf(fid, '%d ', data(i));
     if mod(i, 3) == 0
         fprintf(fid, '\n');
     end
 end
+fclose( fid );
+toc
+
+fprintf('\n');
+fprintf('*****************************\n');
+fprintf('* Reading data from text file *\n');
+fprintf('*****************************\n');
+tic
+fid = fopen( 'text.txt', 'r');
+max = size(data);
+data_read = fscanf(fid, '%d');
+data_read = reshape( data_read, data_length/3, 3 );
 fclose( fid );
 toc
 
